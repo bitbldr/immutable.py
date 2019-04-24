@@ -1,3 +1,8 @@
+import inspect
+
+def is_method(obj, name):
+    return hasattr(obj, name) and inspect.ismethod(getattr(obj, name))
+
 class Node:
   label = None
   key = None
@@ -10,7 +15,7 @@ class Node:
     self.key = key
     self.value = value
     self.parent = parent
-    self.children = children if children != None else dict()
+    self.children = children.copy() if children != None else dict()
 
   def clone(self, parent=None):
     return Node(
@@ -20,6 +25,9 @@ class Node:
       (parent if parent != None else self.parent),
       self.children,
     )
+
+  def __str__(self):
+    return f'Node {hex(hash(self))} [ key: {self.key}, label: {self.label}, value: {str(self.value)} ]'
 
 class ImmutableTrie:
   head = None
@@ -43,7 +51,7 @@ class ImmutableTrie:
       if not key[i] in current_node.children:
         current_node.children[key[i]] = Node(key[i], key, None, current_node)
       else:
-        current_node.children[key[i]] = current_node.children[key[i]].clone(current_node)
+        current_node.children[key[i]] = current_node.children[key[i]].clone(parent=current_node)
       
       # set current_node to new child, and repeat
       current_node = current_node.children[key[i]]
@@ -79,27 +87,27 @@ class ImmutableTrie:
   Returns value of the node at the given key
   """
   def get(self, key):
-    if not self.has(key):
-      raise ValueError('{} not found in trie'.format(key))
-
     # Recurse down the trie to get value
     current_node = self.head
     for letter in key:
-      current_node = current_node.children[letter]
+      if letter in current_node.children:
+        current_node = current_node.children[letter]
+      else:
+        return None
 
     return current_node.value
 
   """
   Returns the node at the given key
   """
-  def getNode(self, key):
-    if not self.has(key):
-      raise ValueError('{} not found in trie'.format(key))
-
+  def get_node(self, key):
     # Recurse down the trie to get node
     current_node = self.head
     for letter in key:
-      current_node = current_node.children[letter]
+      if letter in current_node.children:
+        current_node = current_node.children[letter]
+      else:
+        return None
 
     return current_node
 
@@ -153,7 +161,7 @@ class ImmutableTrie:
   def size(self):
     pass
 
-  def subMap(self, key):
+  def sub_map(self, key):
     # Determine end-of-prefix node
     current = self.head
     if key == None or key == '':
@@ -171,11 +179,11 @@ class ImmutableTrie:
   """
   Returns a string representation of the trie
   """
-  def toString(self, node=None):
+  def __str__(self, node=None):
     if node == None:
-      return self.toString(self.head)
+      return str(self.head)
     else:
-      str = '[ Node: ' + node.key + ' ]\n'
+      s = '[ Node: ' + node.key + ' ]\n'
       for _, child in node.children.items():
-        str = str + self.toString(child)
-      return str
+        s = s + str(child)
+      return s

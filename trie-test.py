@@ -3,30 +3,23 @@ from trie import ImmutableTrie
 
 class TestImmutableTrie(unittest.TestCase):
 
-  def test_keys(self):
-    trie = ImmutableTrie()
-    trie.set('key1', 'value1')
-    trie.set('key2', 'value2')
-    trie.set('abc', 'value3')
+  def test_keys_and_values(self):
+    trie1 = ImmutableTrie()
+    trie2 = trie1.set('key1', 'value1')
+    trie3 = trie2.set('key2', 'value2')
+    trie4 = trie3.set('abc', '123')
 
-    print(trie.keys())
-    print(trie.values())
-    print(trie.getNode('key1').key, trie.getNode('key1').value)
-    print(trie.getNode('key2').key, trie.getNode('key2').value)
-    print(trie.getNode('abc').key, trie.getNode('abc').value)
+    self.assertEqual(set(trie1.keys()), set([]))
+    self.assertEqual(set(trie1.values()), set([]))
 
-    self.assertEqual('foo'.upper(), 'FOO')
+    self.assertEqual(set(trie2.keys()), set(['key1']))
+    self.assertEqual(set(trie2.values()), set(['value1']))
 
-  # def test_isupper(self):
-  #     self.assertTrue('FOO'.isupper())
-  #     self.assertFalse('Foo'.isupper())
+    self.assertEqual(set(trie3.keys()), set(['key1', 'key2']))
+    self.assertEqual(set(trie3.values()), set(['value1', 'value2']))
 
-  # def test_split(self):
-  #     s = 'hello world'
-  #     self.assertEqual(s.split(), ['hello', 'world'])
-  #     # check that s.split fails when the separator is not a string
-  #     with self.assertRaises(TypeError):
-  #         s.split(2)
-
+    self.assertEqual(set(trie4.keys()), set(['key1', 'key2', 'abc']))
+    self.assertEqual(set(trie4.values()), set(['value1', 'value2', '123']))
+    
 if __name__ == '__main__':
   unittest.main()
