@@ -1,5 +1,4 @@
-from trie import Trie
-# from sequence import IndexedSequence`
+from trie import ImmutableTrie
 import inspect
 
 # class List(IndexedSequence):
@@ -7,22 +6,21 @@ class List:
   data = None
 
   def __init__(self, value):
-    if List.isList(value):
+    if List.is_list(value):
       self = value
       return
-    self.data = Trie()
-    # super().__init__()
+    self.data = ImmutableTrie()
 
   @staticmethod
-  def isList(value):
+  def is_list(value):
     return inspect.isclass(List)
   
   @staticmethod
   def of(value):
     return List(value)
   
-  def set(self, index, value):
-    
+  def set(self):
+    pass
   
   def delete(self):
     pass
@@ -48,10 +46,9 @@ class List:
   def update(self):
     pass
   
-  def setSize(self):
+  def slice(self):
     pass
   
-  
-  def toString(self):
+  def __str__(self):
     pass
   
