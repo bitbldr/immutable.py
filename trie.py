@@ -17,6 +17,9 @@ class Node:
     self.parent = parent
     self.children = children.copy() if children != None else dict()
 
+  """
+  Returns a shallow clone of the node
+  """
   def clone(self, parent=None):
     return Node(
       self.label,
@@ -31,24 +34,32 @@ class Node:
 
 class ImmutableTrie:
   head = None
+  size = 0
 
-  def __init__(self, head=None):
-    if head == None:
+  def __init__(self, head=None, size=0):
+    if head is None:
       self.head = Node(label='')
     else:
       self.head = head
 
+    self.size = size
+
+  """
+  Returns a new Trie with the item set at the specified key
+  """
   def set(self, key, value):
-    if key == None or len(key) == 0:
+    if key is None or len(key) == 0:
       raise ValueError('Trie.set: key must be a non-empty, non-null string')
 
     # create a clone of head for the new Trie
     new_head = self.head.clone()
     current_node = new_head
 
+    exists = True
     for i in range(len(key)):
       # current_node is already a clone, find and clone child with updated parent
       if not key[i] in current_node.children:
+        exists = False
         current_node.children[key[i]] = Node(key[i], key, None, current_node)
       else:
         current_node.children[key[i]] = current_node.children[key[i]].clone(parent=current_node)
@@ -56,14 +67,52 @@ class ImmutableTrie:
       # set current_node to new child, and repeat
       current_node = current_node.children[key[i]]
 
-    # store the value at the new end node
+    # store the value at the end node of the cloned branch
     current_node.value = value
 
     # return a new trie with the new updated head
-    return ImmutableTrie(new_head)
+    newSize = self.size if exists else self.size + 1
+    return ImmutableTrie(new_head, newSize)
 
+  """
+  Returns a new Trie with the item removed at the specified key.
+  If the key doesn't exist, it returns the same trie
+  """
+  def remove(self, key):
+    if key is None or key == '':
+      raise ValueError('Trie.has: key must be a non-empty, non-null string')
+
+    # create a clone of head for the new Trie
+    new_head = self.head.clone()
+    current_node = new_head
+
+    # Recurse down the trie to the item
+    current_node = self.head
+    for label in key:
+      if label in current_node.children:
+        current_node.children[label] = current_node.children[label].clone(parent=current_node)
+        current_node = current_node.children[label]
+      else:
+        current_node = None
+        break
+
+    if current_node is None:
+      # key not found, return the same trie
+      return self
+
+    # key was found, remove it from the cloned branch
+    label = current_node.label
+    current_node.parent.children[label] = None
+
+    # return a new trie with the new updated head
+    return ImmutableTrie(new_head, self.size - 1)
+    
+
+  """
+  Returns true if the key exists in the trie
+  """
   def has(self, key):
-    if key == '' or key == None:
+    if key is None or key == '':
       raise ValueError('Trie.has: key must be a non-empty, non-null string')
 
     # Start at the top
@@ -84,7 +133,7 @@ class ImmutableTrie:
     return exists
 
   """
-  Returns value of the node at the given key
+  Returns the value at the given key
   """
   def get(self, key):
     # Recurse down the trie to get value
@@ -120,7 +169,7 @@ class ImmutableTrie:
     # Get all keys under prefix. Initialize the queue to all items under top_node
     queue = [val for key, val in self.head.children.items()]
 
-    # Perform a breadth first search under the prefix
+    # Perform a breadth first search
     # BFS will return a list of keys ordered by increasing length
     while queue:
       current_node = queue.pop()
@@ -146,41 +195,17 @@ class ImmutableTrie:
 
     return values
 
-  def first(self):
-    pass
-
-  def last(self):
-    pass
-
-  def isEmpty(self):
-    pass
-
-  def remove(self):
-    pass
-
-  def size(self):
-    pass
-
-  def sub_map(self, key):
-    # Determine end-of-prefix node
-    current = self.head
-    if key == None or key == '':
-      raise ValueError('Trie.subMap: key must be a non-empty, non-null string')
-    
-    for label in key:
-      if label in current.children:
-        current = current.children[label]
-      else:
-        # Prefix not in tree, return empty list of keys
-        return None
-    
-    return current
+  """
+  Returns true if the trie is empty
+  """
+  def is_empty(self):
+    return self.size == 0
 
   """
   Returns a string representation of the trie
   """
   def __str__(self, node=None):
-    if node == None:
+    if node is None:
       return str(self.head)
     else:
       s = '[ Node: ' + node.key + ' ]\n'

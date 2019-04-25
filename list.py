@@ -49,6 +49,12 @@ class List:
   def slice(self):
     pass
   
+  def first(self):
+    pass
+
+  def last(self):
+    pass
+
   def __str__(self):
     pass
   
